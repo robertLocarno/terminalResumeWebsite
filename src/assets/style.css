@@ -76,7 +76,7 @@ body {
 }
 
 #terminal-container {
-	padding: 16px;
+	padding: 24px;
 	background: none;
 	position: relative;
 	flex-grow: 1;

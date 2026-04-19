@@ -1,4 +1,4 @@
-const CONTROL_PARAMETER_MAP: Record<string, number> = {
+const CONTROL_PARAMETER_MAP: Record<string, number | string> = {
 	reset: 0,
 	resetBold: 22,
 	resetDim: 22,
@@ -51,12 +51,15 @@ const CONTROL_PARAMETER_MAP: Record<string, number> = {
 	brightMagentaBg: 105,
 	brightCyanBg: 106,
 	brightWhiteBg: 107,
+
+	clear: '2J',
+	cursorHome: 'H',
 };
 
 const ESC = '\x1b';
 
 const TextFormatter = {
-	style: (styleKeys: keyof typeof CONTROL_PARAMETER_MAP) => {
+	style: (styleKeys: (keyof typeof CONTROL_PARAMETER_MAP)[]) => {
 		const styleCodes = [];
 		for (const styleKey of styleKeys) {
 			styleCodes.push(CONTROL_PARAMETER_MAP[styleKey]);
@@ -68,6 +71,10 @@ const TextFormatter = {
 	resetStyle: () => {
 		return `${ESC}[${CONTROL_PARAMETER_MAP['reset']}m`
 	},
+
+	clear: () => {
+		return `${ESC}[${CONTROL_PARAMETER_MAP['clear']}${ESC}[${CONTROL_PARAMETER_MAP['cursorHome']}`
+	}
 };
 
 export default TextFormatter;

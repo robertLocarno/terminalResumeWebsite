@@ -1,5 +1,6 @@
 import SystemEvent from "./SystemEvent";
 import SystemFacade from "./SystemFacade";
+import TextFormatter from "./TextFormatter";
 import { getRandomInt } from "./utils";
 
 class Bootloader {
@@ -93,7 +94,16 @@ class Bootloader {
 		this.emulator = system.terminal;
 	}
 
-	async start() {
+	start() {
+		this.enqueueLogLines();
+		this.enqueueClear(1000);
+		this.enqueueAnimation();
+		this.enqueueClear(1000);
+
+		this.system.startEvents();
+	}
+
+	enqueueLogLines() {
 		for (const line of Bootloader.initLines) {
 			const event = new SystemEvent(
 				async () => this.terminal.write(line),
@@ -102,13 +112,24 @@ class Bootloader {
 
 			this.system.enqueueEvent(event);
 		}
+	}
 
+	enqueueAnimation() {
 		this.system.enqueueEvent(new SystemEvent(
-			() => console.log("We done"),
-			1000
+			() => {
+				this.terminal.write("Super cool animation");
+			},
+			0
 		));
+	}
 
-		this.system.startEvents();
+	enqueueClear(delay: number) {
+		this.system.enqueueEvent(new SystemEvent(
+			() => {
+				this.terminal.write(TextFormatter.clear());
+			},
+			delay
+		));
 	}
 }
 

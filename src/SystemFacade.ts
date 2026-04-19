@@ -113,10 +113,11 @@ class SystemFacade {
 
 				this.emulator.run(line).then(
 					(output: string) => {
-						if (output)
+						if (output) {
 							this.terminal.write(output);
+							this.terminal.write('\r\n');
+						}
 
-						this.terminal.write('\r\n');
 						this.sendPrompt();
 					},
 					(error: string) => {
