@@ -5,6 +5,9 @@ import SystemEvent from "./SystemEvent";
 import TextFormatter from "./TextFormatter";
 import Bootloader from "./Bootloader";
 
+import crtFragSrc from "./shaders/crt.frag.glsl?raw";
+import passthroughVertSrc from "./shaders/passthrough.vert.glsl?raw";
+
 class SystemFacade {
 	static TERMINAL_CONFIG = {
 		cursorBlink: true,
@@ -38,6 +41,7 @@ class SystemFacade {
 		this.emulator = bashEmulator();
 		this.bootloader = new Bootloader(this);
 
+		this.attachWebGLCanvas();
 		this.addEventListeners();
 		this.bootloader.start();
 	}
@@ -75,6 +79,120 @@ class SystemFacade {
 		fitAddon.observeResize();
 
 		return fitAddon;
+	}
+
+	attachWebGLCanvas() {
+		const terminalContainer = document.getElementById('terminal-container');
+		const terminalCanvas = terminalContainer?.querySelector('canvas');
+
+		if (!terminalContainer || !terminalCanvas) {
+			console.error("No terminal canvas found, skipping WebGL Canvas initialization");
+			return;
+		}
+
+		terminalCanvas.classList.add('terminal-canvas');
+
+		const webGLCanvas = document.createElement('canvas');
+		webGLCanvas.classList.add('webgl-canvas');
+
+		const gl = webGLCanvas.getContext('webgl2');
+
+		if (!gl) {
+			console.error("Browser does not support WebGL, skipping WebGL canvas initialization");
+			return;
+		}
+
+		terminalContainer.appendChild(webGLCanvas);
+
+		const buildProgram = (gl: WebGL2RenderingContext, vertSrc: string, fragSrc: string): WebGLProgram => {
+			const compile = (type: GLenum, src: string) => {
+				const shader = gl.createShader(type);
+
+				if (!shader) {
+					throw new Error("Unable to create shader");
+				}
+
+				gl.shaderSource(shader, src);
+				gl.compileShader(shader);
+
+				if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+					throw new Error("Unable to create shader", { cause: gl.getShaderInfoLog(shader) });
+				}
+				
+				return shader;
+			}
+
+			const vertexShader = compile(gl.VERTEX_SHADER, vertSrc);
+			const fragmentShader = compile(gl.FRAGMENT_SHADER, fragSrc);
+
+			const program: WebGLProgram = gl.createProgram();
+			gl.attachShader(program, vertexShader);
+			gl.attachShader(program, fragmentShader);
+			gl.linkProgram(program);
+
+			if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+				throw new Error("Unable to link shader program", { cause: gl.getProgramInfoLog(program) });
+			}
+
+			return program;
+		}
+		const program = buildProgram(gl, passthroughVertSrc, crtFragSrc);
+
+		const texture = gl.createTexture();
+		const uTex = gl.getUniformLocation(program, 'uTex');
+		const uTime = gl.getUniformLocation(program, 'uTime');
+		const uPadding = gl.getUniformLocation(program, 'uPadding');
+		const uResolution = gl.getUniformLocation(program, 'uResolution');
+
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+		// Flip 2D canvas during upload since the coordinate systems are inversed
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+		// Create the vertex buffer
+		const posBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+			-1,-1, 1,-1, -1,1,
+			-1,1, 1,-1, 1, 1,
+		]), gl.STATIC_DRAW);
+
+		const aPos = gl.getAttribLocation(program, 'aPos');
+		gl.enableVertexAttribArray(aPos);
+		gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+		const start = performance.now();
+
+		const frame = (now: number) => {
+			if (
+				webGLCanvas.width !== terminalCanvas.width
+					|| webGLCanvas.height !== terminalCanvas.height
+			) {
+				webGLCanvas.width = terminalCanvas.width;
+				webGLCanvas.height = terminalCanvas.height;
+			}
+
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, terminalCanvas);
+
+			gl.viewport(0, 0, webGLCanvas.width, webGLCanvas.height);
+			gl.useProgram(program);
+			gl.uniform1i(uTex, 0);
+			gl.uniform2f(uPadding, 0.05, 0.05);
+			gl.uniform1f(uTime, (now - start) / 1000);
+			gl.uniform2f(uResolution, webGLCanvas.width, webGLCanvas.height);
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+			rafId = requestAnimationFrame(frame);
+		}
+
+		let rafId = requestAnimationFrame(frame);
+
+		// on dispose: cancelAnimationFrame(rafId);
 	}
 
 	addEventListeners() {
