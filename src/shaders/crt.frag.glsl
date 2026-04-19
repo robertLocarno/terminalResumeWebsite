@@ -6,8 +6,9 @@ out vec4 outColor;
 
 uniform sampler2D uTex;
 uniform vec2 uPadding;
-uniform vec2 uResolution;
 uniform float uTime;
+uniform vec2 uResolution;
+uniform float uCAStrength;
 
 // If we want to tweak these in JS, we can convert to uniform (instead of const)
 // const float SCAN = 0.125; // darkness of the scanlines 
@@ -39,12 +40,24 @@ vec2 applyPadding(vec2 uv) {
 	return (uv - uPadding) / (1.0 - 2.0 * uPadding);
 }
 
+vec3 chromaticAberrationColor(vec2 uv, float strength, float time, sampler2D tex) {
+	vec2 caOffset = uv - 0.5;
+	float caStrength = strength - (sin(time * 1.0) * strength * 0.5);
+
+	return vec3(
+		texture(tex, uv + caOffset * caStrength).r,
+		texture(tex, uv).g,
+		texture(tex, uv - caOffset * caStrength).b
+	);
+}
+
 vec3 applyScanlines(vec3 color, float y, float t) {
 	float apply = abs(sin(y * SCAN_FREQUENCY - t * SCAN_SPEED) * SCAN);
 
 	return mix(color, vec3(0.0), apply);
 }
 
+// NOTE: It would be nice to break this file up, but it introduces significant complexity.
 void main()
 {
 	vec2 warpedUv = warpUV(vUv);
@@ -56,7 +69,7 @@ void main()
 	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
 		color = vec3(0.118);
 	} else {
-		color = texture(uTex, uv).rgb;
+		color = chromaticAberrationColor(uv, uCAStrength, uTime, uTex);
 	}
 
 	color = applyScanlines(color, warpedUv.y, uTime);

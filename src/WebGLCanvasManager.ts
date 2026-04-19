@@ -65,6 +65,7 @@ class WebGLCanvasManager {
 		const uTime = this.gl.getUniformLocation(this.program, 'uTime');
 		const uPadding = this.gl.getUniformLocation(this.program, 'uPadding');
 		const uResolution = this.gl.getUniformLocation(this.program, 'uResolution');
+		const uCAStrength = this.gl.getUniformLocation(this.program, 'uCAStrength');
 
 		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
@@ -107,6 +108,7 @@ class WebGLCanvasManager {
 			this.gl.uniform2f(uPadding, 0.05, 0.05);
 			this.gl.uniform1f(uTime, (now - start) / 1000);
 			this.gl.uniform2f(uResolution, this.webGLCanvas.width, this.webGLCanvas.height);
+			this.gl.uniform1f(uCAStrength, .002);
 			this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
 			rafId = requestAnimationFrame(frame);
