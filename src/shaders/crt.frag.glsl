@@ -7,11 +7,13 @@ out vec4 outColor;
 uniform sampler2D uTex;
 uniform vec2 uPadding;
 uniform vec2 uResolution;
+uniform float uTime;
 
 // If we want to tweak these in JS, we can convert to uniform (instead of const)
 // const float SCAN = 0.125; // darkness of the scanlines 
-const float SCAN = 0.25; // darkness of the scanlines 
-const float SCAN_FREQUENCY = 1000.0; // actual_bands = SCAN_FREQUENCY / pi
+const float SCAN = 0.125; // darkness of the scanlines 
+const float SCAN_FREQUENCY = 500.0; // actual_bands = SCAN_FREQUENCY / pi
+const float SCAN_SPEED = 6.0;
 const float WARP = 0.25; // curvature of the monitor, multiplied by X and Y
 const float X_WARP = 0.3;
 const float Y_WARP = 0.4;
@@ -37,8 +39,8 @@ vec2 applyPadding(vec2 uv) {
 	return (uv - uPadding) / (1.0 - 2.0 * uPadding);
 }
 
-vec3 applyScanlines(vec3 color, float y) {
-	float apply = abs(sin(y * SCAN_FREQUENCY) * SCAN);
+vec3 applyScanlines(vec3 color, float y, float t) {
+	float apply = abs(sin(y * SCAN_FREQUENCY - t * SCAN_SPEED) * SCAN);
 
 	return mix(color, vec3(0.0), apply);
 }
@@ -57,7 +59,7 @@ void main()
 		color = texture(uTex, uv).rgb;
 	}
 
-	color = applyScanlines(color, warpedUv.y);
+	color = applyScanlines(color, warpedUv.y, uTime);
 	
 	outColor = vec4(color, 1.0);
 }
