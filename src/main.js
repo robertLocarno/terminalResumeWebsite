@@ -3,12 +3,15 @@ import { init, Terminal } from 'ghostty-web';
 import { FitAddon } from 'ghostty-web';
 import bashEmulator from 'bash-emulator';
 import TextFormatter from './TextFormatter';
+import Bootloader from './Bootloader';
 
 let terminal;
 let fitAddon;
 
 let emulator;
 let buffer = '';
+
+let bootloader;
 
 async function sendPrompt() {
 	const userStyle = TextFormatter.style(['blue', 'dim']);
@@ -43,8 +46,11 @@ async function initTerminal() {
 	fitAddon.fit();
 	fitAddon.observeResize();
 
+	bootloader = new Bootloader(terminal, emulator);
+	bootloader.start();
+
 	// Send initialPrompt
-	sendPrompt();
+	// sendPrompt();
 
 	// Handle window resize for browsers that don't trigger ResizeObserver
 	window.addEventListener('resize', () => {
