@@ -1,7 +1,10 @@
+import SystemEvent from "./SystemEvent";
+import SystemFacade from "./SystemFacade";
 import { getRandomInt } from "./utils";
 
 class Bootloader {
-	static delayBounds = { min: 10, max: 100 };
+	static delayBounds = { min: 5, max: 40 };
+
 	static initLines = [
 		"Welcome to rlSYS\r\n",
 		"rlSYS Kernal Version 0.0.1: Thu Mar 12 18:23:30 MTN 2026; root:xrl-0000.0.01-i/PREVIEW_x86_64\r\n",
@@ -82,33 +85,30 @@ class Bootloader {
 
 	terminal;
 	emulator;
+	system: SystemFacade;
 
-	constructor(terminal, emulator) {
-		this.terminal = terminal;
-		this.emulator = emulator;
-
-		this._events = new EventTarget();
-		this.addEventListener = this._events.addEventListener.bind(this._events);
-		this.removeEventListener = this._events.removeEventListener.bind(this._events);
-		this.dispatchEvent = this._events.dispatchEvent.bind(this._events);
+	constructor(system: SystemFacade) {
+		this.system = system;
+		this.terminal = system.terminal;
+		this.emulator = system.terminal;
 	}
 
-	start() {
-		this.addEventListener('printLinesComplete', () => console.log('initLinesComplete'));
-		this.printLines(Bootloader.initLines);
-	}
+	async start() {
+		for (const line of Bootloader.initLines) {
+			const event = new SystemEvent(
+				async () => this.terminal.write(line),
+				getRandomInt(Bootloader.delayBounds.min, Bootloader.delayBounds.max),
+			);
 
-	async printLines(strArr, i = 0) {
-		if (i >= strArr.length) {
-			this.dispatchEvent(new CustomEvent('printLinesComplete'));
-			return;
+			this.system.enqueueEvent(event);
 		}
 
-		this.terminal.write(strArr[i]);
-		setTimeout(
-			() => this.printLines(strArr, i + 1),
-			getRandomInt(Bootloader.delayBounds.min, Bootloader.delayBounds.max),
-		);
+		this.system.enqueueEvent(new SystemEvent(
+			() => console.log("We done"),
+			1000
+		));
+
+		this.system.startEvents();
 	}
 }
 

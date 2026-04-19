@@ -5,69 +5,82 @@
 }
 
 body {
-	font-family: -apple-system, BlinkMacSystemFont;
-	background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+	font-family: 'Inconsolata', monospace;
+	background: radial-gradient(circle at center, #bfbeaf 94%, #706f62 100%);
+	height: 100vh;
+	width: 100vw;
 	min-height: 100vh;
+	min-width: 100vw;
+	overflow: hidden;
+}
+
+.crt-border {
+	position: relative;
+	height: 100vh;
+	width: 100vw;
+	background: #4f4e45;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 40px 20px;
+	border-radius: 50px;
+}
+
+.crt-border::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	box-shadow:
+		inset 0 0 60px rgba(255, 255, 255, 0.5),
+		inset 0 0 40px rgba(255, 255, 255, 0.2);
+	border-radius: 50px;
+	overflow: hidden;
+	z-index: 0;
 }
 
 .terminal-window {
-	width: 100%;
-	max-width: 1000px;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: 40px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
 	background: #1e1e1e;
-	border-radius: 12px;
-	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 	overflow: hidden;
+
+	border-radius: 24px;
+	overflow: hidden;
+	z-index: 1;
 }
 
-.title-bar {
-	background: #2d2d2d;
-	padding: 12px 16px;
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	border-bottom: 1px solid #1a1a1a;
-}
-
-.traffic-lights {
-	display: flex;
-	gap: 8px;
-}
-
-.light {
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-}
-
-.light.red {
-	background: #ff5f56;
-}
-
-.light.yellow {
-	background: #ffbd2e;
-}
-
-.light.green {
-	background: #27c93f;
-}
-
-.title {
-	color: #e5e5e5;
-	font-size: 13px;
-	font-weight: 500;
-	letter-spacing: 0.3px;
+/* Inset shadow */
+.terminal-window::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	box-shadow:
+		inset 0 0 80px rgba(0, 0, 0, 0.6),
+		inset 0 0 20px rgba(0, 0, 0, 0.4);
+	overflow: hidden;
+	pointer-events: none;
 }
 
 #terminal-container {
-	height: 600px;
 	padding: 16px;
-	background: #1e1e1e;
+	background: none;
 	position: relative;
-	overflow: hidden;
+	flex-grow: 1;
+	overflow: scroll;
 }
 
 /* Ensure terminal canvas can handle scrolling */
