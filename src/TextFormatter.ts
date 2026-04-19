@@ -1,4 +1,4 @@
-const CONTROL_PARAMETER_MAP = {
+const CONTROL_PARAMETER_MAP: Record<string, number> = {
 	reset: 0,
 	resetBold: 22,
 	resetDim: 22,
@@ -56,7 +56,7 @@ const CONTROL_PARAMETER_MAP = {
 const ESC = '\x1b';
 
 const TextFormatter = {
-	style: (styleKeys) => {
+	style: (styleKeys: keyof typeof CONTROL_PARAMETER_MAP) => {
 		const styleCodes = [];
 		for (const styleKey of styleKeys) {
 			styleCodes.push(CONTROL_PARAMETER_MAP[styleKey]);

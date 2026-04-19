@@ -11,7 +11,7 @@ class SystemFacade {
 		fontSize: 14,
 		theme: {
 			background: '#1e1e1e',
-			foreground: '#a9b1d6',
+			foreground: '#e1e8e1',
 		}
 	};
 
