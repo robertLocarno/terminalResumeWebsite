@@ -1,6 +1,7 @@
 import SystemEvent from "./SystemEvent";
 import SystemFacade from "./SystemFacade";
 import TextFormatter from "./TextFormatter";
+import BootloaderAnimation from "./BootloaderAnimation";
 import { getRandomInt } from "./utils";
 
 class Bootloader {
@@ -97,8 +98,8 @@ class Bootloader {
 	start() {
 		this.enqueueLogLines();
 		this.enqueueClear(1000);
-		this.enqueueAnimation();
-		this.enqueueClear(1000);
+		(new BootloaderAnimation(this.system)).enqueue();
+		// this.enqueueClear(1000);
 
 		this.system.startEvents();
 	}
@@ -112,15 +113,6 @@ class Bootloader {
 
 			this.system.enqueueEvent(event);
 		}
-	}
-
-	enqueueAnimation() {
-		this.system.enqueueEvent(new SystemEvent(
-			() => {
-				this.terminal.write("Super cool animation");
-			},
-			0
-		));
 	}
 
 	enqueueClear(delay: number) {
