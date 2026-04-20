@@ -5,7 +5,7 @@ import rawAnimation from "./assets/bootloaderAnimation/frames.txt?raw";
 
 class BootloaderAnimation {
 	// static FPS = 30;
-	static FPS = 1;
+	static FPS = 20;
 	static DELAY_MS = Math.floor(1000 / BootloaderAnimation.FPS);
 	static RAW_FRAME_DELIMETER = '--F--';
 
@@ -35,7 +35,8 @@ class BootloaderAnimation {
 	}
 
 	renderNextFrame() {
-		const frameBuffer = TextFormatter.wrapWithSynchronizedUpdate(this.frames[this.currentFrameId]);
+		let frameBuffer = TextFormatter.clear() + this.frames[this.currentFrameId];
+		frameBuffer = TextFormatter.wrapWithSynchronizedUpdate(frameBuffer);
 
 		this.system.terminal.write(frameBuffer);
 
