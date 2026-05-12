@@ -1,57 +1,61 @@
-const CONTROL_PARAMETER_MAP: Record<string, string> = {
-	reset: '0m',
-	resetBold: '22m',
-	resetDim: '22m',
-	resetItalic: '23m',
-	resetUnderline: '24m',
-	resetInverse: '27m',
-	resetStrikethrough: '29m',
+// SGR (Select Graphic Rendition) sets the color and style of characters after the code.
+// They can be combined as `ESC[1:30m` (sets Bold 1m and Black 30m)
+const SGR_MAP: Record<string, string> = {
+	reset: '0',
+	resetBold: '22',
+	resetDim: '22',
+	resetItalic: '23',
+	resetUnderline: '24',
+	resetInverse: '27',
+	resetStrikethrough: '29',
 
-	bold: '1m',
-	dim: '2m',
-	italic: '3m',
-	underline: '4m',
-	inverse: '7m',
-	strikethrough: '9m',
+	bold: '1',
+	dim: '2',
+	italic: '3',
+	underline: '4',
+	inverse: '7',
+	strikethrough: '9',
 	
-	default: '39m',
-	black: '30m',
-	red: '31m',
-	green: '32m',
-	yellow: '33m',
-	blue: '34m',
-	magenta: '35m',
-	cyan: '36m',
-	white: '37m',
+	default: '39',
+	black: '30',
+	red: '31',
+	green: '32',
+	yellow: '33',
+	blue: '34',
+	magenta: '35',
+	cyan: '36',
+	white: '37',
 
-	brightBlack: '90m',
-	brightRed: '91m',
-	brightGreen: '92m',
-	brightYellow: '93m',
-	brightBlue: '94m',
-	brightMagenta: '95m',
-	brightCyan: '96m',
-	brightWhite: '97m',
+	brightBlack: '90',
+	brightRed: '91',
+	brightGreen: '92',
+	brightYellow: '93',
+	brightBlue: '94',
+	brightMagenta: '95',
+	brightCyan: '96',
+	brightWhite: '97',
 
-	defaultBg: '49m',
-	blackBg: '40m',
-	redBg: '41m',
-	greenBg: '42m',
-	yellowBg: '43m',
-	blueBg: '44m',
-	magentaBg: '45m',
-	cyanBg: '46m',
-	whiteBg: '47m',
+	defaultBg: '49',
+	blackBg: '40',
+	redBg: '41',
+	greenBg: '42',
+	yellowBg: '43',
+	blueBg: '44',
+	magentaBg: '45',
+	cyanBg: '46',
+	whiteBg: '47',
 
-	brightBlackBg: '100m',
-	brightRedBg: '101m',
-	brightGreenBg: '102m',
-	brightYellowBg: '103m',
-	brightBlueBg: '104m',
-	brightMagentaBg: '105m',
-	brightCyanBg: '106m',
-	brightWhiteBg: '107m',
+	brightBlackBg: '100',
+	brightRedBg: '101',
+	brightGreenBg: '102',
+	brightYellowBg: '103',
+	brightBlueBg: '104',
+	brightMagentaBg: '105',
+	brightCyanBg: '106',
+	brightWhiteBg: '107',
+};
 
+const CONTROL_PARAMETER_MAP: Record<string, string> = {
 	clear: '2J',
 	cursorHome: 'H',
 
@@ -62,13 +66,14 @@ const CONTROL_PARAMETER_MAP: Record<string, string> = {
 const ESC = '\x1b';
 
 const TextFormatter = {
-	style: (styleKeys: (keyof typeof CONTROL_PARAMETER_MAP)[]) => {
+	// ONLY WORKS WITH SGR CODES!
+	style: (styleKeys: (keyof typeof SGR_MAP)[]) => {
 		const styleCodes = [];
 		for (const styleKey of styleKeys) {
-			const command = CONTROL_PARAMETER_MAP[styleKey];
-			command.replace(/m/g, '');
+			let code = SGR_MAP[styleKey];
+			code = code.replace(/m/g, '');
 
-			styleCodes.push(command);
+			styleCodes.push(code);
 		}
 
 		return `${ESC}[${styleCodes.join(';')}m`;
@@ -79,13 +84,11 @@ const TextFormatter = {
 	},
 
 	resetStyle: () => {
-		const command = TextFormatter.command;
-		return `${command('reset')}`
+		return `${TextFormatter.style(['reset'])}`
 	},
 
 	clear: () => {
-		const command = TextFormatter.command;
-		return `${command('clear')}${command('cursorHome')}`
+		return `${TextFormatter.command('clear')}${TextFormatter.command('cursorHome')}`
 	},
 
 	wrapWithSynchronizedUpdate: (content: string) => {
