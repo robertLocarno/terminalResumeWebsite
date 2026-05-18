@@ -99,7 +99,7 @@ class Bootloader {
 		this.enqueueLogLines();
 		this.enqueueClear(1000);
 		(new BootloaderAnimation(this.system)).enqueue();
-		// this.enqueueClear(1000);
+		this.enqueueClear(1000);
 
 		this.system.startEvents();
 	}
@@ -119,6 +119,7 @@ class Bootloader {
 		this.system.enqueueEvent(new SystemEvent(
 			() => {
 				this.terminal.write(TextFormatter.clear());
+				console.log("Clearing!");
 			},
 			delay
 		));

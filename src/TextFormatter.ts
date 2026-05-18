@@ -55,7 +55,8 @@ const SGR_MAP: Record<string, string> = {
 	brightWhiteBg: '107',
 };
 
-const CONTROL_PARAMETER_MAP: Record<string, string> = {
+// CSI (Control Sequence Introducer) works at a higher level than SGR (superset) and needs to be handled separately.
+const CSI_MAP: Record<string, string> = {
 	clear: '2J',
 	cursorHome: 'H',
 
@@ -79,8 +80,8 @@ const TextFormatter = {
 		return `${ESC}[${styleCodes.join(';')}m`;
 	},
 
-	command: (key: keyof typeof CONTROL_PARAMETER_MAP) => {
-		return `${ESC}[${CONTROL_PARAMETER_MAP[key]}`;
+	command: (key: keyof typeof CSI_MAP) => {
+		return `${ESC}[${CSI_MAP[key]}`;
 	},
 
 	resetStyle: () => {
@@ -94,6 +95,11 @@ const TextFormatter = {
 	wrapWithSynchronizedUpdate: (content: string) => {
 		const command = TextFormatter.command;
 		return `${command('beginSynchronizedUpdate')}${content}${command('endSynchronizedUpdate')}`;
+	},
+	
+	// Special boy control sequence, 1-indexed
+	pad: ({ row, col }: { row: number, col: number }) => {
+		return `${ESC}[${row};${col}H`;
 	}
 };
 
