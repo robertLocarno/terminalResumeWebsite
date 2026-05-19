@@ -85,6 +85,21 @@ class Bootloader {
 		"Boot Complete",
 	];
 
+	static welcomeMessage = [
+		"Hello, world!",
+		"\r\n",
+		"And welcome! This interface is inspired by the terminal I use every day.",
+		"It's backed by a simple bash emulator and supports basic commands (which can be viewed with `" + TextFormatter.style(['brightBlue', 'bold']) + "help" + TextFormatter.resetStyle() + "`).",
+		"\r\n",
+		"The terminal was one of the first things that drew me to programming. The simple complexity remains overwhelming to this day, but there's beauty in that contradiction.",
+		"\r\n",
+		"Take a look around and get in touch at " + TextFormatter.style(['brightBlue', 'bold']) + "me@robertLocarno.com" + TextFormatter.resetStyle() + ".",
+		"\r\n",
+		"- Robert Locarno",
+		"\r\n",
+		"\r\n",
+	];
+
 	terminal;
 	emulator;
 	system: SystemFacade;
@@ -96,18 +111,51 @@ class Bootloader {
 	}
 
 	start() {
+		const animation = new BootloaderAnimation(this.system);
+
+		this.enqueueHideCursor();
 		this.enqueueLogLines();
 		this.enqueueClear(1000);
-		(new BootloaderAnimation(this.system)).enqueue();
+		animation.enqueue();
 		this.enqueueClear(1000);
+		this.enqueueWelcomeMessage();
+		this.enqueuePrompt();
+		this.enqueueShowCursor();
 
 		this.system.startEvents();
+	}
+
+	enqueueHideCursor() {
+		const event = new SystemEvent(
+			({ onComplete }) => {
+				this.terminal.write(TextFormatter.command('hideCursor'));
+				onComplete();
+			},
+			0
+		);
+
+		this.system.enqueueEvent(event);
+	}
+
+	enqueueShowCursor() {
+		const event = new SystemEvent(
+			({ onComplete }) => {
+				this.terminal.write(TextFormatter.command('showCursor'));
+				onComplete();
+			},
+			0
+		);
+
+		this.system.enqueueEvent(event);
 	}
 
 	enqueueLogLines() {
 		for (const line of Bootloader.initLines) {
 			const event = new SystemEvent(
-				async () => this.terminal.write(line),
+				({ onComplete }) => {
+					this.terminal.write(line)
+					onComplete();
+				},
 				getRandomInt(Bootloader.delayBounds.min, Bootloader.delayBounds.max),
 			);
 
@@ -115,14 +163,40 @@ class Bootloader {
 		}
 	}
 
+	enqueueWelcomeMessage() {
+		const event = new SystemEvent(
+			({ onComplete }) => {
+				this.terminal.write(Bootloader.welcomeMessage.join('\r\n'));
+				onComplete();
+			},
+			0
+		);
+
+		this.system.enqueueEvent(event);
+	}
+
+	enqueuePrompt() {
+		const event = new SystemEvent(
+			({ onComplete }) => {
+				this.system.sendPrompt();
+				onComplete();
+			},
+			0
+		);
+
+		this.system.enqueueEvent(event);
+	}
+
 	enqueueClear(delay: number) {
-		this.system.enqueueEvent(new SystemEvent(
-			() => {
-				this.terminal.write(TextFormatter.clear());
-				console.log("Clearing!");
+		const event = new SystemEvent(
+			({ onComplete }) => {
+				this.terminal.write(TextFormatter.wrapWithSynchronizedUpdate(TextFormatter.clear()));
+				onComplete();
 			},
 			delay
-		));
+		);
+
+		this.system.enqueueEvent(event);
 	}
 }
 

@@ -5,6 +5,7 @@ import SystemEvent from "./SystemEvent";
 import TextFormatter from "./TextFormatter";
 import Bootloader from "./Bootloader";
 import WebGLCanvasManager from "./WebGLCanvasManager";
+import EventManager from "./EventManager";
 
 class SystemFacade {
 	static TERMINAL_CONFIG = {
@@ -20,6 +21,7 @@ class SystemFacade {
 	fitAddon: FitAddon;
 	emulator: typeof bashEmulator;
 	bootloader: Bootloader;
+	eventManager: EventManager;
 	webGLCanvasManager: WebGLCanvasManager;
 
 	eventQueue: SystemEvent[] = [];
@@ -39,11 +41,12 @@ class SystemFacade {
 		this.fitAddon = this.createFitAddon();
 		this.emulator = bashEmulator();
 		this.bootloader = new Bootloader(this);
+		this.eventManager = new EventManager(this);
 
 		this.webGLCanvasManager = new WebGLCanvasManager(this);
 		this.webGLCanvasManager.startPostProcessing();
 
-		this.addEventListeners();
+		this.eventManager.registerEventListeners();
 		this.bootloader.start();
 	}
 
@@ -82,67 +85,6 @@ class SystemFacade {
 		return fitAddon;
 	}
 
-	addEventListeners() {
-		window.addEventListener('resize', () => {
-			if (!this.fitAddon) return;
-
-			this.fitAddon.fit();
-		});
-
-		// Handle terminal resize
-		this.terminal.onResize((size) => {
-			// TODO: Uh oh idk how this should work.
-			// if (websocket && websocket.readyState === WebSocket.OPEN) {
-			// 	// Send resize as control sequence (server expects this format)
-			// 	websocket.send(JSON.stringify({
-			// 		type: 'resize',
-			// 		cols: size.cols,
-			// 		rows: size.rows
-			// 	}));
-			// }
-			console.log("Resize not supported:", size);
-		});
-
-		// Handle user input
-		this.terminal.onData((data) => {
-			if (data === '\r') {
-				this.terminal.write('\r\n');
-
-				const line = this.inputBuffer;
-				this.inputBuffer = '';
-
-				if (line === '') {
-					this.sendPrompt();
-					return;
-				}
-
-				this.emulator.run(line).then(
-					(output: string) => {
-						if (output) {
-							this.terminal.write(output);
-							this.terminal.write('\r\n');
-						}
-
-						this.sendPrompt();
-					},
-					(error: string) => {
-						this.terminal.write(String(error));
-						this.terminal.write('\r\n');
-						this.sendPrompt();
-					}
-				);
-			} else if (data === '\x7f') {
-				if (this.inputBuffer.length) {
-					this.inputBuffer = this.inputBuffer.slice(0, -1);
-					this.terminal.write('\b \b');
-				}
-			} else {
-				this.terminal.write(data);
-				this.inputBuffer += data;
-			}
-		});
-	}
-
 	enqueueEvent(event: SystemEvent) {
 		this.eventQueue.push(event);
 	}
@@ -156,10 +98,13 @@ class SystemFacade {
 
 		if (!nextEvent) return;
 
+		// Delay + chaining
+		// onComplete kicks off the next event, which is then delayed via setTimeout
 		setTimeout(
-			async () => {
-				nextEvent.func();
-				this.startNextEvent();
+			() => {
+				nextEvent.func({ onComplete: () => {
+					this.startNextEvent();
+				}});
 			},
 			nextEvent.delayMs,
 		)

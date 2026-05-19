@@ -1,4 +1,6 @@
-type FuncType = () => void; 
+// func must call onComplete to trigger the next event in the queue.
+type OnCompleteType = () => void;
+type FuncType = ({ onComplete }: { onComplete: OnCompleteType }) => void; 
 
 class SystemEvent extends CustomEvent<object> {
 	func: FuncType;
@@ -13,3 +15,4 @@ class SystemEvent extends CustomEvent<object> {
 }
 
 export default SystemEvent;
+export { FuncType, OnCompleteType };

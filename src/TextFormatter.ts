@@ -62,6 +62,9 @@ const CSI_MAP: Record<string, string> = {
 
 	beginSynchronizedUpdate: '?2026h',
 	endSynchronizedUpdate: '?2026l',
+
+	hideCursor: '?25l',
+	showCursor: '?25h',
 };
 
 const ESC = '\x1b';

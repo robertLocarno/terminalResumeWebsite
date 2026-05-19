@@ -1,10 +1,10 @@
-import SystemEvent from "./SystemEvent";
+import SystemEvent, { OnCompleteType } from "./SystemEvent";
 import SystemFacade from "./SystemFacade";
 import TextFormatter from "./TextFormatter";
 import rawAnimation from "./assets/bootloaderAnimation/frames.txt?raw";
 
 class BootloaderAnimation {
-	static FPS = 20;
+	static FPS = 30;
 	static DELAY_MS = Math.floor(1000 / BootloaderAnimation.FPS);
 	static RAW_FRAME_DELIMETER = '--F--';
 	static RAW_LINE_DELIMETER = '\n';
@@ -20,6 +20,7 @@ class BootloaderAnimation {
 
 	durationMs: number;
 
+	onComplete: OnCompleteType | null = null; 
 	currentIntervalId: number | null = null;
 	currentFrameId: number = 0;
 
@@ -37,7 +38,8 @@ class BootloaderAnimation {
 
 	enqueue() {
 		this.system.enqueueEvent(new SystemEvent(
-			() => {
+			({ onComplete }) => {
+				this.onComplete = onComplete;
 				this.currentIntervalId = setInterval(
 					this.renderNextFrame.bind(this),
 					BootloaderAnimation.DELAY_MS,
@@ -56,7 +58,7 @@ class BootloaderAnimation {
 		);
 
 		let frameBuffer = TextFormatter.clear() + paddedLines.join('');
-		frameBuffer = TextFormatter.wrapWithSynchronizedUpdate(frameBuffer);
+		frameBuffer = TextFormatter.wrapWithSynchronizedUpdate(frameBuffer) + TextFormatter.command("hideCursor");
 
 		this.system.terminal.write(frameBuffer);
 
@@ -65,6 +67,9 @@ class BootloaderAnimation {
 
 			this.currentIntervalId = null;
 			this.currentFrameId = 0;
+
+			if (this.onComplete) this.onComplete();
+			this.onComplete = null;
 		} else {
 			this.currentFrameId++;
 		}
