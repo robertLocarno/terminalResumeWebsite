@@ -31,6 +31,9 @@ class EventManager {
 	}
 
 	private onTerminalData = (data: string) => {
+		// Don't let the user type too early.
+		if (!this.system.userInputEnabled) return;
+
 		if (data === '\r') {
 			this.terminal.write('\r\n');
 

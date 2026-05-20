@@ -129,6 +129,7 @@ class Bootloader {
 		const event = new SystemEvent(
 			({ onComplete }) => {
 				this.terminal.write(TextFormatter.command('hideCursor'));
+				this.system.userInputEnabled = false;
 				onComplete();
 			},
 			0
@@ -141,6 +142,7 @@ class Bootloader {
 		const event = new SystemEvent(
 			({ onComplete }) => {
 				this.terminal.write(TextFormatter.command('showCursor'));
+				this.system.userInputEnabled = true;
 				onComplete();
 			},
 			0

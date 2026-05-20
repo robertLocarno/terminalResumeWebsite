@@ -6,6 +6,7 @@ import TextFormatter from "./TextFormatter";
 import Bootloader from "./Bootloader";
 import WebGLCanvasManager from "./WebGLCanvasManager";
 import EventManager from "./EventManager";
+import { registerCommands } from "./CommandHandler";
 
 class SystemFacade {
 	static TERMINAL_CONFIG = {
@@ -15,6 +16,10 @@ class SystemFacade {
 			background: '#1e1e1e',
 			foreground: '#e1e8e1',
 		}
+	};
+	
+	static INITIAL_STATE = {
+		user: "user",
 	};
 
 	terminal: Terminal;
@@ -27,7 +32,7 @@ class SystemFacade {
 	eventQueue: SystemEvent[] = [];
 	inputBuffer: string = '';
 
-	isReady: boolean = false;
+	userInputEnabled: boolean = false;
 
 	static async build(): Promise<SystemFacade> {
 		// Using a factory method to handle the async initialization of ghostty-web
@@ -39,7 +44,7 @@ class SystemFacade {
 	constructor() {
 		this.terminal = this.createTerminal();
 		this.fitAddon = this.createFitAddon();
-		this.emulator = bashEmulator();
+		this.emulator = bashEmulator(SystemFacade.INITIAL_STATE);
 		this.bootloader = new Bootloader(this);
 		this.eventManager = new EventManager(this);
 
@@ -48,6 +53,8 @@ class SystemFacade {
 
 		this.eventManager.registerEventListeners();
 		this.bootloader.start();
+
+		registerCommands(this);
 	}
 
 	// TODO: This needs to be abstracted
@@ -58,7 +65,7 @@ class SystemFacade {
 		const resetStyle = TextFormatter.resetStyle();
 
 		const pwd = await this.emulator.run("pwd");
-		this.terminal.write(`${userStyle}rl@local ${pwdStyle}${pwd}${promptStyle}$${resetStyle} `);
+		this.terminal.write(`${userStyle}${this.emulator.state.user}@local ${pwdStyle}${pwd}${promptStyle}$${resetStyle} `);
 	}
 
 	createTerminal(): Terminal {
