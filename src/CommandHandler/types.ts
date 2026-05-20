@@ -10,4 +10,5 @@ export type CommandType = {
 	name: string,
 	process: ProcessType,
 	manual: () => void,
+	desc: string,
 };

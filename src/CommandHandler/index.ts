@@ -1,14 +1,17 @@
 import SystemFacade from "../SystemFacade";
+import creditsCommand from "./commands/credits";
 import helpCommand from "./commands/help";
+import { CommandType } from "./types";
 
-const commands = [
+const customCommands: CommandType[] = [
+	creditsCommand,
 	helpCommand,
 ];
 
 const registerCommands = (system: SystemFacade) => {
-	commands.forEach(command => {
+	customCommands.forEach(command => {
 		system.emulator.commands[command.name] = command.process;
 	});
 }
 
-export { commands, registerCommands };
+export { customCommands, registerCommands };
