@@ -89,6 +89,12 @@ class WebGLCanvasManager {
 		this.gl.enableVertexAttribArray(aPos);
 		this.gl.vertexAttribPointer(aPos, 2, this.gl.FLOAT, false, 0, 0);
 
+		// These don't need to be set every frame, they're static (useProgram sets program context).
+		this.gl.useProgram(this.program);
+		this.gl.uniform1i(uTex, 0);
+		this.gl.uniform2f(uPadding, 0.05, 0.05);
+		this.gl.uniform1f(uCAStrength, .002);
+
 		const start = performance.now();
 
 		const frame = (now: number) => {
@@ -109,6 +115,9 @@ class WebGLCanvasManager {
 				this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
 
 				this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, this.gl.RGBA8, this.terminalCanvas.width, this.terminalCanvas.height);
+				
+				this.gl.useProgram(this.program);
+				this.gl.uniform2f(uResolution, this.webGLCanvas.width, this.webGLCanvas.height);
 			}
 
 			this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
@@ -117,11 +126,7 @@ class WebGLCanvasManager {
 
 			this.gl.viewport(0, 0, this.webGLCanvas.width, this.webGLCanvas.height);
 			this.gl.useProgram(this.program);
-			this.gl.uniform1i(uTex, 0);
-			this.gl.uniform2f(uPadding, 0.05, 0.05);
 			this.gl.uniform1f(uTime, (now - start) / 1000);
-			this.gl.uniform2f(uResolution, this.webGLCanvas.width, this.webGLCanvas.height);
-			this.gl.uniform1f(uCAStrength, .002);
 			this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 
 			rafId = requestAnimationFrame(frame);
@@ -151,7 +156,7 @@ class WebGLCanvasManager {
 	}
 
 	private createWebGLRenderingContext(): WebGL2RenderingContext {
-		const gl = this.webGLCanvas.getContext('webgl2');
+		const gl = this.webGLCanvas.getContext('webgl2', {antialias: false, depth: false, alpha: false});
 
 		if (!gl) throw new WebGLNotSupportedError();
 
