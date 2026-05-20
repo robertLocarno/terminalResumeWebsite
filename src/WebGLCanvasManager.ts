@@ -55,12 +55,10 @@ class WebGLCanvasManager {
 		// Initial checks passed, we should be able to safely append the webGLCanvas and hide the terminal canvas
 		this.terminalContainer.appendChild(this.webGLCanvas);
 		this.terminalCanvas.classList.add('hidden');
-
-		this.startPostProcessing();
 	}
 
 	startPostProcessing() {
-		const texture = this.gl.createTexture();
+		let texture = this.gl.createTexture();
 		const uTex = this.gl.getUniformLocation(this.program, 'uTex');
 		const uTime = this.gl.getUniformLocation(this.program, 'uTime');
 		const uPadding = this.gl.getUniformLocation(this.program, 'uPadding');
@@ -72,6 +70,9 @@ class WebGLCanvasManager {
 		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
 		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
 		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+
+		// Allocate storage for the currently bound texture. This prevents unnecessary re-allocations
+		this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, this.gl.RGBA8, this.terminalCanvas.width, this.terminalCanvas.height);
 
 		// Flip 2D canvas during upload since the coordinate systems are inversed
 		this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -97,10 +98,22 @@ class WebGLCanvasManager {
 			) {
 				this.webGLCanvas.width = this.terminalCanvas.width;
 				this.webGLCanvas.height = this.terminalCanvas.height;
+
+				// On resize we have to make sure to allocate new texture storage
+				this.gl.deleteTexture(texture);
+				texture = this.gl.createTexture();
+				this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+				this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+				this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+				this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+				this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+
+				this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, this.gl.RGBA8, this.terminalCanvas.width, this.terminalCanvas.height);
 			}
 
 			this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-			this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.terminalCanvas);
+
+			this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, 0, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.terminalCanvas);
 
 			this.gl.viewport(0, 0, this.webGLCanvas.width, this.webGLCanvas.height);
 			this.gl.useProgram(this.program);
