@@ -37,6 +37,10 @@ class BootloaderAnimation {
 	}
 
 	enqueue() {
+		if (this.cols < BootloaderAnimation.ANIMATION_COLS) {
+			return;
+		}
+
 		this.system.enqueueEvent(new SystemEvent(
 			({ onComplete }) => {
 				this.onComplete = onComplete;
