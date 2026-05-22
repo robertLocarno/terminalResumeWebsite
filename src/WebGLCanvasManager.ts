@@ -44,6 +44,8 @@ class WebGLCanvasManager {
 	gl: WebGL2RenderingContext;
 	program: WebGLProgram;
 
+	resizedLastFrame: boolean = false;
+
 	constructor(system: SystemFacade) {
 		this.system = system;
 
@@ -94,6 +96,7 @@ class WebGLCanvasManager {
 		this.gl.uniform1i(uTex, 0);
 		this.gl.uniform2f(uPadding, 0.05, 0.05);
 		this.gl.uniform1f(uCAStrength, .002);
+		this.gl.uniform2f(uResolution, this.webGLCanvas.width, this.webGLCanvas.height);
 
 		const start = performance.now();
 
@@ -115,9 +118,10 @@ class WebGLCanvasManager {
 				this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
 
 				this.gl.texStorage2D(this.gl.TEXTURE_2D, 1, this.gl.RGBA8, this.terminalCanvas.width, this.terminalCanvas.height);
-				
-				this.gl.useProgram(this.program);
 				this.gl.uniform2f(uResolution, this.webGLCanvas.width, this.webGLCanvas.height);
+				
+				rafId = requestAnimationFrame(frame);
+				return;
 			}
 
 			this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
@@ -151,6 +155,8 @@ class WebGLCanvasManager {
 	private createWebGLCanvasElement(): HTMLCanvasElement {
 		const canvas = document.createElement('canvas');
 		canvas.classList.add('webgl-canvas');
+		canvas.height = this.terminalCanvas.height;
+		canvas.width = this.terminalCanvas.width;
 
 		return canvas;
 	}

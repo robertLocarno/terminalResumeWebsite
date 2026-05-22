@@ -15,7 +15,7 @@ class SystemFacade {
 		theme: {
 			background: '#1e1e1e',
 			foreground: '#e1e8e1',
-		}
+		},
 	};
 	
 	static INITIAL_STATE = {

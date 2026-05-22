@@ -12,16 +12,8 @@ class EventManager {
 	}
 
 	registerEventListeners() {
-		window.addEventListener('resize', this.onResize);
-
 		this.terminal.onResize(this.onTerminalResize);
 		this.terminal.onData(this.onTerminalData);
-	}
-
-	private onResize = () => {
-		if (!this.system.fitAddon) return;
-
-		this.system.fitAddon.fit();
 	}
 
 	private onTerminalResize = (size: { cols: number, rows: number }) => {

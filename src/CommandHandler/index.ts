@@ -1,10 +1,12 @@
 import SystemFacade from "../SystemFacade";
-import creditsCommand from "./commands/credits";
+import aboutCommand from "./commands/about";
 import helpCommand from "./commands/help";
+import resumeCommand from "./commands/resume";
 import { CommandType } from "./types";
 
 const customCommands: CommandType[] = [
-	creditsCommand,
+	resumeCommand,
+	aboutCommand,
 	helpCommand,
 ];
 

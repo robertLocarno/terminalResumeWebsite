@@ -1,7 +1,7 @@
 import TextFormatter from "../../TextFormatter";
 import { CommandType, CommandEnvType } from "../types"
 
-const creditsSource: { name: string, website: string, desc: string }[] = [
+const aboutSource: { name: string, website: string, desc: string }[] = [
 	{
 		name: "ghostty-web",
 		website: "github.com/coder/ghostty-web",
@@ -29,11 +29,11 @@ const creditsSource: { name: string, website: string, desc: string }[] = [
 	},
 ];
 
-const creditsCommand: CommandType = {
-	name: 'credits',
+const aboutCommand: CommandType = {
+	name: 'about',
 	process: (env: CommandEnvType, args: string[]) => {
 		if (args.length !== 0) {
-			const targetSource = creditsSource.find((source) => source.name === args[0]);
+			const targetSource = aboutSource.find((source) => source.name === args[0]);
 
 			if (!targetSource) {
 				env.output(`Unable to find source "${args[0]}", cannot open website.`);
@@ -47,22 +47,26 @@ const creditsCommand: CommandType = {
 			return;
 		}
 
+		env.output("This website is an homage to my personal development enviornment. It uses Ghostty alongside bash-emulator to provide a shell environment that runs directly on the client.");
+
+		env.output("\r\n");
+
 		env.output("This website would not be possible without the help of some fantastic Open Source tools.\r\n");
 		env.output("\r\n");
 
-		creditsSource.forEach((source) => {
+		aboutSource.forEach((source) => {
 			env.output(`  ${TextFormatter.style(['bold', 'brightWhite'])}${source.name}${TextFormatter.resetStyle()}\r\n`);
 			env.output(`    ${source.desc}\r\n`);
 			env.output(`    website: ${source.website}\r\n`);
 			env.output('\r\n');
 		});
 
-		env.output("To visit any of the websites for these sources, you can use `credits [source]`");
+		env.output("To visit any of the websites for these sources, you can use `about [source]`");
 
 		env.exit(0);
 	},
 	manual: () => {},
-	desc: "Prints credits.",
+	desc: "Prints information about this application.",
 };
 
-export default creditsCommand;
+export default aboutCommand;

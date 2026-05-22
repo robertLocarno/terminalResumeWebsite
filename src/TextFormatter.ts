@@ -58,6 +58,7 @@ const SGR_MAP: Record<string, string> = {
 // CSI (Control Sequence Introducer) works at a higher level than SGR (superset) and needs to be handled separately.
 const CSI_MAP: Record<string, string> = {
 	clear: '2J',
+	clearScrollback: '3J',
 	cursorHome: 'H',
 
 	beginSynchronizedUpdate: '?2026h',
@@ -92,7 +93,7 @@ const TextFormatter = {
 	},
 
 	clear: () => {
-		return `${TextFormatter.command('clear')}${TextFormatter.command('cursorHome')}`
+		return `${TextFormatter.command('clear')}${TextFormatter.command('clearScrollback')}${TextFormatter.command('cursorHome')}`
 	},
 
 	wrapWithSynchronizedUpdate: (content: string) => {

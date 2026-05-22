@@ -7,7 +7,6 @@ out vec4 outColor;
 uniform sampler2D uTex;
 uniform vec2 uPadding;
 uniform float uTime;
-uniform vec2 uResolution;
 uniform float uCAStrength;
 
 // If we want to tweak these in JS, we can convert to uniform (instead of const)
