@@ -27,7 +27,7 @@ class SystemFacade {
 	emulator: typeof bashEmulator;
 	bootloader: Bootloader;
 	eventManager: EventManager;
-	webGLCanvasManager: WebGLCanvasManager;
+	webGLCanvasManager: WebGLCanvasManager | null;
 
 	eventQueue: SystemEvent[] = [];
 	inputBuffer: string = '';
@@ -48,8 +48,12 @@ class SystemFacade {
 		this.bootloader = new Bootloader(this);
 		this.eventManager = new EventManager(this);
 
-		this.webGLCanvasManager = new WebGLCanvasManager(this);
-		this.webGLCanvasManager.startPostProcessing();
+		try {
+			this.webGLCanvasManager = new WebGLCanvasManager(this);
+			this.webGLCanvasManager.startPostProcessing();
+		} catch (e) {
+			this.webGLCanvasManager = null;
+		}
 
 		this.eventManager.registerEventListeners();
 		this.bootloader.start();

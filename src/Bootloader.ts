@@ -119,6 +119,7 @@ class Bootloader {
 		animation.enqueue();
 		this.enqueueClear(1000);
 		this.enqueueWelcomeMessage();
+		this.enqueueShaderWarning();
 		this.enqueuePrompt();
 		this.enqueueShowCursor();
 
@@ -171,6 +172,25 @@ class Bootloader {
 				let message = "";
 
 				Bootloader.welcomeMessage.forEach((str: string) => (message += `${wordWrap(str, this.terminal.cols)}\r\n`));
+
+				this.terminal.write(message);
+				onComplete();
+			},
+			0
+		);
+
+		this.system.enqueueEvent(event);
+	}
+
+	enqueueShaderWarning() {
+		const event = new SystemEvent(
+			({ onComplete }) => {
+				if (this.system.webGLCanvasManager !== null) {
+					onComplete();
+					return;
+				}
+
+				let message = "WARNING: Your browser confirguration doesn't support WebGL shaders, falling back to default ghostty-web rendering.\r\n\r\n";
 
 				this.terminal.write(message);
 				onComplete();

@@ -78,7 +78,7 @@ body {
 	background: none;
 	position: relative;
 	flex-grow: 1;
-	overflow: scroll;
+	overflow: hidden;
 }
 
 /* Ensure terminal canvas can handle scrolling */

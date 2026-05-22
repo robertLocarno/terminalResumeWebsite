@@ -14,6 +14,12 @@ class WebGLNotSupportedError extends Error {
 	}
 }
 
+class FirefoxOnMacNotSupportedError extends Error {
+	constructor() {
+		super("Firefox's OpenGL implementation creates extended locks when processing shaders, causing severe performance issues. Skipping WebGL shaders.");
+	}
+}
+
 class ShaderInitializationError extends Error {
 	constructor(type: GLenum, src: string, cause: string | null = null) {
 		super(
@@ -36,6 +42,11 @@ class WebGLCanvasManager {
 		},
 	];
 
+	private static isFirefoxOnMac(): boolean {
+		const ua = navigator.userAgent;
+		return ua.includes('Firefox') && ua.includes('Macintosh');
+	}
+
 	system: SystemFacade;
 
 	terminalContainer: HTMLElement;
@@ -48,6 +59,8 @@ class WebGLCanvasManager {
 
 	constructor(system: SystemFacade) {
 		this.system = system;
+
+		if (WebGLCanvasManager.isFirefoxOnMac()) throw new FirefoxOnMacNotSupportedError();
 
 		[this.terminalContainer, this.terminalCanvas] = this.fetchRequiredElements();
 		this.webGLCanvas = this.createWebGLCanvasElement();
