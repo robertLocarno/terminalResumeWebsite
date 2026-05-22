@@ -18,7 +18,7 @@ const defaultCommands = {
 
 const helpCommand: CommandType = {
 	name: 'help',
-	process: (env: CommandEnvType, _args: string[]) => {
+	buildProcess: (_system) => ((env: CommandEnvType, _args: string[]) => {
 		env.output("You can use the following commands to interact with this enviornment:\r\n");
 
 		Object.entries(defaultCommands).forEach(([name, desc]) => {
@@ -30,7 +30,7 @@ const helpCommand: CommandType = {
 		});
 
 		env.exit(0);
-	},
+	}),
 	manual: () => {},
 	desc: "Prints help instructions.",
 };

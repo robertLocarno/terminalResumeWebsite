@@ -31,7 +31,7 @@ const aboutSource: { name: string, website: string, desc: string }[] = [
 
 const aboutCommand: CommandType = {
 	name: 'about',
-	process: (env: CommandEnvType, args: string[]) => {
+	buildProcess: (_system) => ((env: CommandEnvType, args: string[]) => {
 		if (args.length !== 0) {
 			const targetSource = aboutSource.find((source) => source.name === args[0]);
 
@@ -64,7 +64,7 @@ const aboutCommand: CommandType = {
 		env.output("To visit any of the websites for these sources, you can use `about [source]`");
 
 		env.exit(0);
-	},
+	}),
 	manual: () => {},
 	desc: "Prints information about this application.",
 };

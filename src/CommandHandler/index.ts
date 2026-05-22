@@ -12,7 +12,7 @@ const customCommands: CommandType[] = [
 
 const registerCommands = (system: SystemFacade) => {
 	customCommands.forEach(command => {
-		system.emulator.commands[command.name] = command.process;
+		system.emulator.commands[command.name] = command.buildProcess(system);
 	});
 }
 

@@ -1,3 +1,5 @@
+import SystemFacade from "../SystemFacade";
+
 export type CommandEnvType = {
 	output: (data: string) => void,
 	error: (data: string) => void,
@@ -6,9 +8,11 @@ export type CommandEnvType = {
 
 export type ProcessType = (env: CommandEnvType, args: string[]) => {} | void;
 
+export type BuildProcessType = (system: SystemFacade) => ProcessType;
+
 export type CommandType = {
 	name: string,
-	process: ProcessType,
+	buildProcess: BuildProcessType,
 	manual: () => void,
 	desc: string,
 };
