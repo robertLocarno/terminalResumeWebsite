@@ -3,9 +3,10 @@ import SystemFacade from "./SystemFacade";
 import TextFormatter from "./TextFormatter";
 import BootloaderAnimation from "./BootloaderAnimation";
 import { getRandomInt } from "./utils";
+import { wordWrap } from "./utils/wordWrap";
 
 class Bootloader {
-	static delayBounds = { min: 5, max: 40 };
+	static delayBounds = { min: 5, max: 20 };
 
 	static initLines = [
 		"Welcome to rlSYS\r\n",
@@ -97,7 +98,6 @@ class Bootloader {
 		"\r\n",
 		"- Robert Locarno",
 		"\r\n",
-		"\r\n",
 	];
 
 	terminal;
@@ -168,7 +168,11 @@ class Bootloader {
 	enqueueWelcomeMessage() {
 		const event = new SystemEvent(
 			({ onComplete }) => {
-				this.terminal.write(Bootloader.welcomeMessage.join('\r\n'));
+				let message = "";
+
+				Bootloader.welcomeMessage.forEach((str: string) => (message += `${wordWrap(str, this.terminal.cols)}\r\n`));
+
+				this.terminal.write(message);
 				onComplete();
 			},
 			0

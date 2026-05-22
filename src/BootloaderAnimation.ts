@@ -4,7 +4,7 @@ import TextFormatter from "./TextFormatter";
 import rawAnimation from "./assets/bootloaderAnimation/frames.txt?raw";
 
 class BootloaderAnimation {
-	static FPS = 30;
+	static FPS = 42;
 	static DELAY_MS = Math.floor(1000 / BootloaderAnimation.FPS);
 	static RAW_FRAME_DELIMETER = '--F--';
 	static RAW_LINE_DELIMETER = '\n';
